@@ -276,7 +276,7 @@ class KNHeap {
 public:
   KNHeap(Key sup, Key infimum);
   int   getSize() const;
-  void  getMin(Key *key, Value *value);
+  void  getMin(Key *key, Value *value) const;
   void  deleteMin(Key *key, Value *value);
   void  insert(Key key, Value value);
 };
@@ -292,7 +292,7 @@ inline int KNHeap<Key, Value>::getSize() const
 }
 
 template <class Key, class Value>
-inline void  KNHeap<Key, Value>::getMin(Key *key, Value *value) {
+inline void  KNHeap<Key, Value>::getMin(Key *key, Value *value) const {
   Key key1 = minBuffer1->key;
   Key key2 = insertHeap.getMinKey();
   if (key2 >= key1) {
