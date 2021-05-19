@@ -92,16 +92,8 @@ deleteMin()
   int succ = 2;
   int sz   = size;
   while (succ < sz) {
-    Key key1 = data[succ].key;
-    Key key2 = data[succ + 1].key;
-    if (key1 > key2) {
-      succ++;
-      data[hole].key   = key2;
-      data[hole].value = data[succ].value;
-    } else {
-      data[hole].key   = key1;
-      data[hole].value = data[succ].value;
-    }
+    succ += data[succ].key > data[succ + 1].key;
+    data[hole] = data[succ];
     hole = succ;
     succ <<= 1;
   }
@@ -142,16 +134,8 @@ sortTo(Element *to)
     int hole = 1;
     int succ = 2;
     while (succ <= sz) {
-      Key key1 = data[succ    ].key;
-      Key key2 = data[succ + 1].key;
-      if (key1 > key2) {
-        succ++;
-        data[hole].key   = key2;
-        data[hole].value = data[succ].value;
-      } else {
-        data[hole].key = key1;
-        data[hole].value = data[succ].value;
-      }
+      succ += data[succ].key > data[succ + 1].key;
+      data[hole] = data[succ];
       hole = succ;
       succ <<= 1;
     }
