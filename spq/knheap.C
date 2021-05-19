@@ -400,8 +400,7 @@ multiMergeK(Element *to, int l)
 ////////////////////////// KNHeap //////////////////////////////////////
 template <class Key, class Value>
 KNHeap<Key, Value>::
-KNHeap(Key sup, Key infimum) : insertHeap(sup, infimum),
-                                   activeLevels(0), size(0)
+KNHeap(Key sup, Key infimum) : activeLevels(0), size(0)
 {
   buffer1[KNBufferSize1].key = sup; // sentinel
   minBuffer1 = buffer1 + KNBufferSize1; // empty

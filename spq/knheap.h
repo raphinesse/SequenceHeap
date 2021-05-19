@@ -3,6 +3,8 @@
 #define KNHEAP
 #include "util.h"
 
+#include <limits>
+
 const int KNBufferSize1 = 32; // equalize procedure call overheads etc.
 const int KNN = 512; // bandwidth
 const int KNKMAX = 64;  // maximal arity
@@ -15,6 +17,24 @@ const int KNKMAX = 4;  // maximal arity
 const int KNLevels = 4; // overall capacity >= KNN*KNKMAX^KNLevels
 const int LogKNKMAX = 2;  // ceil(log KNK)
 */
+
+/**
+ * Provides information on the supremum and infimum of a given numeric type.
+ */
+template <typename T> struct NumberRange {
+    using limits = std::numeric_limits<T>;
+
+    static constexpr T inf() noexcept {
+        return limits::has_infinity ? -limits::infinity() : limits::lowest();
+    }
+
+    static constexpr T sup() noexcept {
+        return limits::has_infinity ? limits::infinity() : limits::max();
+    }
+
+    static constexpr bool contains(T k) { return inf() < k && k < sup(); };
+};
+
 template <class Key, class Value>
 struct KNElement {Key key; Value value;};
 
@@ -22,18 +42,16 @@ struct KNElement {Key key; Value value;};
 // fixed size binary heap
 template <class Key, class Value, int capacity>
 class BinaryHeap {
-  //  static const Key infimum  = 4;
-  //static const Key supremum = numeric_limits<Key>.max();
+  using KeyRange = NumberRange<Key>;
   typedef KNElement<Key, Value> Element;
   Element data[capacity + 2];
   int size;  // index of last used element
 public:
-  BinaryHeap(Key sup, Key infimum):size(0) {
-    data[0].key = infimum; // sentinel
-    data[capacity + 1].key = sup;
+  BinaryHeap() {
+    data[0].key = KeyRange::inf(); // sentinel
+    data[capacity + 1].key = KeyRange::sup();
     reset();
   }
-  Key getSupremum() { return data[capacity + 1].key; }
   void reset();
   int   getSize()     const { return size; }
   Key   getMinKey()   const { return data[1].key; }
@@ -55,9 +73,8 @@ template <class Key, class Value, int capacity>
 inline void BinaryHeap<Key, Value, capacity>::
 reset() {
   size = 0;
-  Key sup = getSupremum();
   for (int i = 1;  i <= capacity;  i++) {
-    data[i].key = sup;
+    data[i].key = KeyRange::sup();
   }
   // if this becomes a bottle neck
   // we might want to replace this by log KNN
@@ -102,7 +119,7 @@ deleteMin()
   data[hole].key = bubble;
   data[hole].value = data[sz].value;
 
-  data[size].key = getSupremum(); // mark as deleted
+  data[size].key = KeyRange::sup(); // mark as deleted
   size = sz - 1;
 }
 
@@ -114,7 +131,6 @@ inline void BinaryHeap<Key, Value, capacity>::
 sortTo(Element *to)
 {
   const int           sz = size;
-  const Key          sup = getSupremum();
   Element * const beyond = to + sz;
   Element * const root   = data + 1;
   while (to < beyond) {
@@ -141,7 +157,7 @@ sortTo(Element *to)
     }
 
     // just mark hole as deleted
-    data[hole].key = sup;
+    data[hole].key = KeyRange::sup();
   }
   size = 0;
 }
@@ -152,6 +168,7 @@ inline void BinaryHeap<Key, Value, capacity>::
 insert(Key k, Value v)
 {
   Assert2(size < capacity);
+  Assert2(KeyRange::contains(k));
   Debug4(cout << "insert(" << k << ", " << v << ")" << endl);
 
   size++;
