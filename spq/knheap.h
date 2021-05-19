@@ -3,6 +3,7 @@
 #define KNHEAP
 #include "util.h"
 
+#include <cstdint>
 #include <limits>
 
 const int KNBufferSize1 = 32; // equalize procedure call overheads etc.
@@ -42,10 +43,11 @@ struct KNElement {Key key; Value value;};
 // fixed size binary heap
 template <class Key, class Value, int capacity>
 class BinaryHeap {
+  using size_type = int_fast32_t;
   using KeyRange = NumberRange<Key>;
   typedef KNElement<Key, Value> Element;
   Element data[capacity + 2];
-  int size;  // index of last used element
+  size_type size;  // index of last used element
 public:
   BinaryHeap() {
     data[0].key = KeyRange::inf(); // sentinel
@@ -53,7 +55,7 @@ public:
     reset();
   }
   void reset();
-  int   getSize()     const { return size; }
+  size_type getSize() const { return size; }
   Key   getMinKey()   const { return data[1].key; }
   Value getMinValue() const { return data[1].value; }
   void  deleteMin();
@@ -73,7 +75,7 @@ template <class Key, class Value, int capacity>
 inline void BinaryHeap<Key, Value, capacity>::
 reset() {
   size = 0;
-  for (int i = 1;  i <= capacity;  i++) {
+  for (size_type i = 1;  i <= capacity;  i++) {
     data[i].key = KeyRange::sup();
   }
   // if this becomes a bottle neck
@@ -88,9 +90,9 @@ deleteMin()
   Assert2(size > 0);
 
   // first move up elements on a min-path
-  int hole = 1;
-  int succ = 2;
-  int sz   = size;
+  size_type hole = 1;
+  size_type succ = 2;
+  size_type sz   = size;
   while (succ < sz) {
     succ += data[succ].key > data[succ + 1].key;
     data[hole] = data[succ];
@@ -100,7 +102,7 @@ deleteMin()
 
   // bubble up rightmost element
   Key bubble = data[sz].key;
-  int pred = hole >> 1;
+  size_type pred = hole >> 1;
   while (data[pred].key > bubble) { // must terminate since min at root
     data[hole] = data[pred];
     hole = pred;
@@ -122,7 +124,7 @@ template <class Key, class Value, int capacity>
 inline void BinaryHeap<Key, Value, capacity>::
 sortTo(Element *to)
 {
-  const int           sz = size;
+  const size_type     sz = size;
   Element * const beyond = to + sz;
   Element * const root   = data + 1;
   while (to < beyond) {
@@ -131,8 +133,8 @@ sortTo(Element *to)
     to++;
 
     // bubble up second smallest as in deleteMin
-    int hole = 1;
-    int succ = 2;
+    size_type hole = 1;
+    size_type succ = 2;
     while (succ <= sz) {
       succ += data[succ].key > data[succ + 1].key;
       data[hole] = data[succ];
@@ -156,8 +158,8 @@ insert(Key k, Value v)
   Debug4(cout << "insert(" << k << ", " << v << ")" << endl);
 
   size++;
-  int hole = size;
-  int pred = hole >> 1;
+  size_type hole = size;
+  size_type pred = hole >> 1;
   Key predKey = data[pred].key;
   while (predKey > k) { // must terminate due to sentinel at 0
     data[hole].key   = predKey;
